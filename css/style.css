@@ -720,40 +720,18 @@ h3 {
     box-shadow: 0 0 15px var(--accent-glow);
 }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    height: 100dvh; /* Dynamic viewport height — acompanha a barra do navegador mobile */
-    background: rgba(0, 0, 0, 0.96);
-    z-index: 3000;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.modal.active {
-    display: flex;
-    opacity: 1;
-}
-
-/* ─── Modal Limpo ─── */
+/* ─── Modal ─── */
 .modal {
     display: none;
     position: fixed;
     inset: 0;
-    background: #000;
+    background: rgba(0, 0, 0, 0.88);
     z-index: 9999;
     opacity: 0;
     transition: opacity 0.2s ease;
-    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
 }
 
 .modal.active {
@@ -761,15 +739,18 @@ h3 {
     opacity: 1;
 }
 
+/* ─── Desktop: caixa centralizada com tamanho controlado ─── */
 .modal-content {
     width: 100%;
-    height: 100%;
-    min-height: 0;
+    max-width: 960px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     position: relative;
-    background: #000;
+    background: #0a0a0c;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
 }
 
 /* Botão fechar: flutuante sobre o vídeo, canto superior direito */
@@ -798,30 +779,27 @@ h3 {
     border-color: #e50914;
 }
 
-/* Wrapper do vídeo ocupa todo o espaço restante */
+/* Wrapper do vídeo: aspect ratio 16:9 fixo no desktop */
 .video-wrapper {
-    flex: 1;
     width: 100%;
     position: relative;
     background: #000;
     overflow: hidden;
-    min-height: 0;
+    /* 16:9 */
+    aspect-ratio: 16 / 9;
+    flex-shrink: 0;
 }
 
 /*
  * Truque para esconder controles nativos do Google Drive:
  * Expandimos o iframe além dos limites do container (overflow hidden corta)
  * A barra inferior do Drive (~50px) e a barra superior (~40px) ficam fora da tela.
- * Apenas o vídeo em si permanece visível.
  */
 .modal-iframe-player {
     position: absolute;
-    /* Empurra pra cima para esconder a barra superior do Drive */
     top: -40px;
-    /* Centraliza lateralmente */
     left: 0;
     width: 100%;
-    /* Mais alto que o container para cortar a barra inferior do Drive */
     height: calc(100% + 90px);
     border: 0;
     background: #000;
@@ -838,25 +816,28 @@ h3 {
 
 /* Barra inferior com título + WhatsApp */
 .modal-info {
-    padding: 12px 20px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    background: rgba(10, 10, 12, 0.95);
+    background: rgba(10, 10, 12, 0.97);
     backdrop-filter: blur(12px);
     border-top: 1px solid rgba(255,255,255,0.07);
     flex-shrink: 0;
     z-index: 10;
 }
 
-
 #modal-title {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     margin-bottom: 0;
     color: #fff;
     text-transform: none;
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
 }
 
 #modal-desc,
@@ -867,6 +848,7 @@ h3 {
 .modal-cta-box {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .btn-whatsapp-modal {
@@ -883,6 +865,7 @@ h3 {
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    white-space: nowrap;
 }
 
 .btn-whatsapp-modal:hover {
@@ -1133,23 +1116,65 @@ body {
         gap: 25px;
     }
 
-    /* Modal mobile: botão fechar respeita safe area do iPhone */
+    /* ─── Modal mobile: tela cheia ─── */
+    .modal {
+        padding: 0;
+        align-items: stretch;
+        justify-content: stretch;
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        flex-direction: column;
+    }
+
+    /* Vídeo ocupa o máximo de espaço restante */
+    .video-wrapper {
+        aspect-ratio: unset;
+        flex: 1;
+        min-height: 0;
+    }
+
+    /* Corte do Drive ajustado para mobile (barra menor) */
+    .modal-iframe-player {
+        top: -30px;
+        height: calc(100% + 70px);
+    }
+
+    /* Botão fechar respeita safe area do iPhone */
     .close-modal {
         top: max(14px, env(safe-area-inset-top, 14px));
         right: 14px;
     }
 
+    /* Barra inferior compacta no mobile */
     .modal-info {
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
-        flex-direction: column;
-        text-align: center;
+        padding: 8px 14px;
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+        flex-direction: row;
+        gap: 10px;
+        flex-shrink: 0;
     }
 
-    .modal-cta-box,
-    .btn-whatsapp-modal {
-        width: 100%;
-        justify-content: center;
+    #modal-title {
         font-size: 0.82rem;
+        max-width: 45%;
+    }
+
+    .btn-whatsapp-modal {
+        padding: 8px 14px;
+        font-size: 0.75rem;
+        gap: 6px;
+    }
+
+    .wa-icon {
+        width: 16px;
+        height: 16px;
     }
 
 

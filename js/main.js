@@ -290,29 +290,15 @@ function openModal(video) {
         modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
     }
 
+    // Monta URL do embed com dicas de qualidade alta (tenta 1080p, depois 720p)
+    // O parâmetro hd=1 sinaliza ao player do Drive para preferir HD
     const embedUrl = fileId
-        ? `https://drive.google.com/file/d/${fileId}/preview`
+        ? `https://drive.google.com/file/d/${fileId}/preview?hd=1`
         : getEmbedUrl(video.driveLink);
 
     modalIframe.src = embedUrl;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-
-    // Tenta entrar em fullscreen nativo automaticamente — apenas no mobile
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isMobile) {
-        const tryFullscreen = () => {
-            const el = modalIframe;
-            if (el.requestFullscreen) {
-                el.requestFullscreen().catch(() => {});
-            } else if (el.webkitRequestFullscreen) {
-                el.webkitRequestFullscreen();
-            } else if (el.mozRequestFullScreen) {
-                el.mozRequestFullScreen();
-            }
-        };
-        setTimeout(tryFullscreen, 150);
-    }
 }
 
 function closeModal() {
