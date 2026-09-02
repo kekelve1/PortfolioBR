@@ -309,15 +309,37 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// --- Google Drive Fetch Utility ---
+// --- Google Drive Fetch Utility with Smart Cache ---
 async function fetchFolderVideos(folderId) {
     if (!GOOGLE_API_KEY || !folderId) return [];
+
+    const CACHE_KEY = `drive_folder_${folderId}`;
+    const CACHE_TIME_KEY = `drive_folder_${folderId}_time`;
+    const CACHE_TTL = 1000 * 60 * 15; // 15 minutos de cache para máxima velocidade e economia
+
+    try {
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        const cachedTime = sessionStorage.getItem(CACHE_TIME_KEY);
+        if (cached && cachedTime && (Date.now() - parseInt(cachedTime, 10) < CACHE_TTL)) {
+            return JSON.parse(cached);
+        }
+    } catch (e) {
+        // Ignora erro de storage se indisponível
+    }
+
     try {
         const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,videoMediaMetadata)&key=${GOOGLE_API_KEY}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        return (data.files || []).filter(f => f.mimeType && (f.mimeType.startsWith('video/') || f.name.match(/\.(mp4|mov|webm)$/i)));
+        const validFiles = (data.files || []).filter(f => f.mimeType && (f.mimeType.startsWith('video/') || f.name.match(/\.(mp4|mov|webm)$/i)));
+        
+        try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify(validFiles));
+            sessionStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+        } catch (e) {}
+
+        return validFiles;
     } catch (err) {
         console.warn('Drive fetch error:', err);
         return [];
@@ -337,13 +359,15 @@ async function buildReel() {
         reelTrack.style.animationPlayState = (!isVisible || isHovered) ? 'paused' : 'running';
     }
 
-    function createReelItem(video) {
+    function createReelItem(video, index) {
         const item = document.createElement('div');
         item.classList.add('reel-item');
 
-        const thumbUrl = getThumbnail(video);
+        const thumbUrl = video.thumbnailUrl || getThumbnail(video);
+        const isPriority = index < 8; // Os 8 primeiros na tela carregam com máxima prioridade
+
         item.innerHTML = `
-            <img src="${thumbUrl}" alt="${video.title}" loading="lazy">
+            <img src="${thumbUrl}" alt="${video.title}" loading="eager" decoding="async" ${isPriority ? 'fetchpriority="high"' : ''}>
             <div class="reel-play-btn">
                 <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
@@ -384,12 +408,22 @@ async function buildReel() {
     let reelVideos = [];
 
     if (driveFiles.length > 0) {
-        const mapped = driveFiles.map(f => ({
-            title: f.name.replace(/\.mp4$/i, '').trim(),
-            category: 'Preview',
-            driveLink: `https://drive.google.com/file/d/${f.id}/preview`,
-            rawName: f.name
-        }));
+        const mapped = driveFiles.map(f => {
+            // Usa CDN ultra-rápido do Google se disponível
+            let thumb = '';
+            if (f.thumbnailLink) {
+                thumb = f.thumbnailLink.replace(/=s\d+/, '=s400');
+            } else {
+                thumb = `https://drive.google.com/thumbnail?id=${f.id}&sz=w400-h250`;
+            }
+            return {
+                title: f.name.replace(/\.mp4$/i, '').trim(),
+                category: 'Preview',
+                driveLink: `https://drive.google.com/file/d/${f.id}/preview`,
+                thumbnailUrl: thumb,
+                rawName: f.name
+            };
+        });
 
         const matchedPriority = [];
         const remaining = [];
@@ -419,6 +453,14 @@ async function buildReel() {
         while (rIdx < remaining.length) {
             reelVideos.push(remaining[rIdx++]);
         }
+
+        // Preload imediato de todas as thumbnails em background (garante que tudo esteja no cache antes de rolar)
+        reelVideos.forEach(v => {
+            if (v.thumbnailUrl) {
+                const preloadImg = new Image();
+                preloadImg.src = v.thumbnailUrl;
+            }
+        });
     } else {
         // Fallback local se estiver offline
         reelVideos = activeVideos.filter(v => v.category.toLowerCase() === 'restaurante');
@@ -429,8 +471,9 @@ async function buildReel() {
     reelTrack.innerHTML = '';
 
     // Duplicação 1:1 para ciclo contínuo sem repetições excedentes por cena
-    [...reelVideos, ...reelVideos].forEach(video => {
-        reelTrack.appendChild(createReelItem(video));
+    const fullCycle = [...reelVideos, ...reelVideos];
+    fullCycle.forEach((video, idx) => {
+        reelTrack.appendChild(createReelItem(video, idx));
     });
 
     // Velocidade de deslocamento: ~70px por segundo
