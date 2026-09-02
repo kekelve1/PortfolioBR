@@ -1117,30 +1117,33 @@ body {
         gap: 25px;
     }
 
-    /* ─── Modal Mobile: Card centralizado 16:9 proporcional ─── */
+    /* ─── Modal Mobile: Confortável, vídeo amplo e controles corretos ─── */
     .modal {
-        padding: 16px;
+        padding: 12px;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.92);
     }
 
     .modal-content {
         width: 100%;
-        max-width: 440px;
-        max-height: 90vh;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+        max-width: 460px;
+        max-height: 94vh;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
         flex-direction: column;
         overflow: hidden;
         background: #0c0c0e;
     }
 
-    /* Vídeo mantém 16:9 para o Drive não renderizar botões gigantes */
+    /* Altura suficiente no mobile para o Google Drive manter os controles embaixo e o vídeo amplo */
     .video-wrapper {
         width: 100%;
-        aspect-ratio: 16 / 9;
+        height: 46vh;
+        min-height: 300px;
+        max-height: 52vh;
+        aspect-ratio: unset;
         position: relative;
         background: #000;
         flex-shrink: 0;
@@ -1148,54 +1151,69 @@ body {
     }
 
     .modal-iframe-player {
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
+        border: 0;
+        background: #000;
     }
 
-    /* Botão fechar */
+    /* Botão fechar bem visível e acima do vídeo */
     .close-modal {
-        top: 8px;
-        right: 8px;
-        width: 34px;
-        height: 34px;
-        font-size: 20px;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 22px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        z-index: 100;
     }
 
-    /* Barra inferior estritamente abaixo do player */
+    /* Barra inferior estritamente abaixo do player, sem cortes */
     .modal-info {
-        padding: 12px 14px;
+        padding: 14px 16px;
         flex-direction: column;
         gap: 10px;
         align-items: stretch;
         background: #0d0d10;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-sizing: border-box;
     }
 
     #modal-title {
-        font-size: 0.92rem;
+        font-size: 0.95rem;
         max-width: 100%;
         text-align: center;
         white-space: normal;
-        line-height: 1.3;
+        line-height: 1.35;
+        color: #fff;
     }
 
     .modal-cta-box {
         width: 100%;
+        display: flex;
+        justify-content: center;
     }
 
     .btn-whatsapp-modal {
         width: 100%;
+        box-sizing: border-box;
         justify-content: center;
-        padding: 10px 14px;
-        font-size: 0.8rem;
+        padding: 11px 16px;
+        font-size: 0.82rem;
         gap: 8px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.25;
     }
 
     .wa-icon {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
     }
 
 
