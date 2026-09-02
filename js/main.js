@@ -259,8 +259,6 @@ function scrollToGallery() {
     }
 }
 
-// --- Interaction Logic ---
-
 function handleFilter(e) {
     const btn = e.target.closest('.filter-btn');
     if (!btn) return;
@@ -271,6 +269,16 @@ function handleFilter(e) {
     currentFilter = btn.getAttribute('data-category');
     currentPage = 1;
     updateGallery();
+
+    // Centraliza o botão clicado na esteira horizontal no celular
+    const filtersContainer = document.querySelector('.filters');
+    if (filtersContainer) {
+        const targetScroll = btn.offsetLeft - (filtersContainer.clientWidth / 2) + (btn.clientWidth / 2);
+        filtersContainer.scrollTo({
+            left: targetScroll,
+            behavior: 'smooth'
+        });
+    }
 }
 
 function openModal(video) {
