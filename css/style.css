@@ -755,20 +755,50 @@ h3 {
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
 }
 
-.close-modal {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    right: auto;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    color: white;
-    font-size: 22px;
+.modal-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: #0d0d0f;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-fullscreen-modal {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(187, 0, 255, 0.15);
+    border: 1px solid rgba(187, 0, 255, 0.4);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: var(--font-heading);
+    font-weight: 600;
     cursor: pointer;
-    z-index: 100;
+    transition: all 0.25s ease;
+}
+
+.btn-fullscreen-modal:hover {
+    background: var(--accent-color);
+    box-shadow: 0 0 15px rgba(187, 0, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-fullscreen-modal svg {
+    fill: currentColor;
+}
+
+.close-modal {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
     transition: 0.2s;
     display: flex;
     align-items: center;
@@ -776,9 +806,9 @@ h3 {
 }
 
 .close-modal:hover {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    transform: scale(1.05);
+    background: #e50914;
+    border-color: #e50914;
+    transform: scale(1.08);
 }
 
 .video-wrapper {
@@ -787,7 +817,18 @@ h3 {
     height: 0;
     overflow: hidden;
     background: black;
-    border-radius: 14px 14px 0 0;
+}
+
+/* Bloqueia o botão popout nativo do Google Drive no canto superior direito */
+.drive-popout-blocker {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    z-index: 20;
+    cursor: pointer;
 }
 
 .modal-video-player,
@@ -1095,13 +1136,13 @@ body {
         gap: 25px;
     }
 
-    /* Modal mobile: proporção perfeita 16:9 sem faixas pretas e sem barras flutuantes no meio */
+    /* Modal mobile: proporção perfeita 16:9 e controles limpos */
     .modal {
         height: 100dvh;
         align-items: center;
         justify-content: center;
-        padding: 16px 14px;
-        padding-top: max(40px, env(safe-area-inset-top) + 20px);
+        padding: 12px;
+        padding-top: max(16px, env(safe-area-inset-top));
         padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
 
@@ -1109,24 +1150,26 @@ body {
         margin: auto;
         width: 100%;
         max-width: 480px;
-        overflow: visible;
+        overflow: hidden;
         border-radius: 14px;
         background: #0d0d0f;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.95);
     }
 
-    /* Botão fechar no topo direito */
+    .modal-header-actions {
+        padding: 8px 12px;
+    }
+
+    .btn-fullscreen-modal {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+
     .close-modal {
-        top: -42px;
-        right: 0;
-        left: auto;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        width: 36px;
-        height: 36px;
-        font-size: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        position: static;
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
     }
 
     /* Proporção 16:9 limpa no celular: o vídeo preenche 100% da largura sem criar barras pretas gigantes */
@@ -1137,7 +1180,7 @@ body {
         min-height: 0 !important;
         max-height: none !important;
         width: 100% !important;
-        border-radius: 14px 14px 0 0;
+        border-radius: 0;
         overflow: hidden;
         background: #000;
     }
@@ -1151,7 +1194,7 @@ body {
         width: 100% !important;
         height: 100% !important;
         border: 0;
-        border-radius: 14px 14px 0 0;
+        border-radius: 0;
         object-fit: contain;
     }
 

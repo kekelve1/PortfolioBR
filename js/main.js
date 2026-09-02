@@ -346,6 +346,37 @@ function closeModal() {
 filterBtns.forEach(btn => btn.addEventListener('click', handleFilter));
 closeModalBtn.addEventListener('click', closeModal);
 
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+const popoutBlocker = document.querySelector('.drive-popout-blocker');
+
+function toggleFullscreen() {
+    const wrapper = document.getElementById('video-wrapper');
+    const iframe = document.getElementById('modal-iframe');
+    const video = document.getElementById('modal-video');
+    const target = (video && video.style.display !== 'none' ? video : null) || iframe || wrapper;
+
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (target && target.requestFullscreen) {
+            target.requestFullscreen().catch(() => {
+                if (wrapper && wrapper.requestFullscreen) wrapper.requestFullscreen();
+            });
+        } else if (target && target.webkitRequestFullscreen) {
+            target.webkitRequestFullscreen();
+        } else if (wrapper && wrapper.requestFullscreen) {
+            wrapper.requestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+}
+
+if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+if (popoutBlocker) popoutBlocker.addEventListener('click', toggleFullscreen);
+
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
