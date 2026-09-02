@@ -493,20 +493,196 @@ export const videos = [
         "driveLink": "https://drive.google.com/file/d/1uY8FsC8tHUk_dtfyVhacKFzqa2ZqPQo2/preview"
     },
     {
-        "title": "Experiência Gastronômica",
+        "title": "Faça seu Evento aqui",
         "category": "Restaurante",
-        "description": "Edição rítmica focada na experiência do cliente",
+        "description": "Vídeo institucional e comercial de espaço para eventos",
         "tools": "Premiere Pro",
-        "duration": "0:16",
-        "driveLink": "https://drive.google.com/file/d/17rlElqw-6R5hgpigwLCqlC59GJYq0ew_/preview"
+        "duration": "0:15",
+        "driveLink": "https://drive.google.com/file/d/17VisUMYUvkNsTL0GaDP8Xtl4ikqm57uu/preview"
     },
     {
-        "title": "Trend Drink Reverso",
+        "title": "Roteiro 15 - Trend - Food Porn com Bife Ancho",
         "category": "Restaurante",
-        "description": "Efeito reverso criativo com alto impacto visual",
+        "description": "Edição sensorial de gastronomia com alto apetite appeal",
+        "tools": "Premiere Pro",
+        "duration": "0:25",
+        "driveLink": "https://drive.google.com/file/d/1c5L_SfMa5y-sVbTMDGG2WYZv4-aGKGEK/preview"
+    },
+    {
+        "title": "Roteiro 22 - Trend - Edição de Altíssima Qualidade",
+        "category": "Restaurante",
+        "description": "Cortes dinâmicos, ritmo visual e transições de impacto",
         "tools": "Premiere Pro",
         "duration": "0:12",
-        "driveLink": "https://drive.google.com/file/d/1qETPZytmd5QgTskM0PxtjXoZ-fdiYcJQ/preview"
+        "driveLink": "https://drive.google.com/file/d/1dBlV-cxEjOlwGJkU_VgV-w71cM7tNbBN/preview"
+    },
+    {
+        "title": "Roteiro 23 - Trend - Edição de Altíssima Qualidade 2",
+        "category": "Restaurante",
+        "description": "Edição dinâmica para restaurantes e gastronomia",
+        "tools": "Premiere Pro",
+        "duration": "0:27",
+        "driveLink": "https://drive.google.com/file/d/185FRvjiPf7leTdXtuhlrGXKuW4260Nvf/preview"
+    },
+    {
+        "title": "Roteiro 16 Joga pra cima e cai pronto",
+        "category": "Restaurante",
+        "description": "Efeito criativo de transição e dinamismo",
+        "tools": "Premiere Pro",
+        "duration": "0:12",
+        "driveLink": "https://drive.google.com/file/d/1iiOjKhfgyiSHZLjcJERll1OX5pP1dNZ1/preview"
+    },
+    {
+        "title": "Roteiro 10 - De Buenos Aires a Roma",
+        "category": "Restaurante",
+        "description": "Storytelling envolvente de gastronomia internacional",
+        "tools": "Premiere Pro",
+        "duration": "0:33",
+        "driveLink": "https://drive.google.com/file/d/1YK_ImHPVVQvC9Wj42260YfXaZiGbBNqn/preview"
+    },
+    {
+        "title": "Roteiro 08 - ASMR do Buenas!",
+        "category": "Restaurante",
+        "description": "Sound design aprimorado para sensação auditiva e sensorial",
+        "tools": "Premiere Pro",
+        "duration": "0:21",
+        "driveLink": "https://drive.google.com/file/d/19mALUnqREpn0akh24dzl2uByjyFNCGBX/preview"
+    },
+    {
+        "title": "Roteiro 04 - Qual Música Combina com Vinho",
+        "category": "Restaurante",
+        "description": "Vídeo temático com conexão de lifestyle e gastronomia",
+        "tools": "Premiere Pro",
+        "duration": "0:28",
+        "driveLink": "https://drive.google.com/file/d/1dQBapfaCQUfIiOlYW__F8l9AEFDC0eth/preview"
+    },
+    {
+        "title": "Reels 1 - Comida",
+        "category": "Restaurante",
+        "description": "Edição focada na beleza dos pratos e sabor visual",
+        "tools": "Premiere Pro",
+        "duration": "0:25",
+        "driveLink": "https://drive.google.com/file/d/1oIQFb2kmQKUFufc6KHmgwhW3XUxe-zcZ/preview"
+    },
+    {
+        "title": "Reels 2 - Bebida",
+        "category": "Restaurante",
+        "description": "Cortes rápidos e valorização de drinks artesanais",
+        "tools": "Premiere Pro",
+        "duration": "0:22",
+        "driveLink": "https://drive.google.com/file/d/1CiZLugDRGXsU8iSKFBEl9wltIv6uV0qw/preview"
+    },
+    {
+        "title": "Reels 3 - Espaço",
+        "category": "Restaurante",
+        "description": "Tour cinematográfico da experiência e ambientação",
+        "tools": "Premiere Pro",
+        "duration": "0:23",
+        "driveLink": "https://drive.google.com/file/d/1jQEfPKno-ts6UbG3ByEgL934VGNQxi0J/preview"
+    },
+    {
+        "title": "Buenas Comp 1",
+        "category": "Restaurante",
+        "description": "Compilado rítmico de melhores momentos",
+        "tools": "Premiere Pro",
+        "duration": "0:12",
+        "driveLink": "https://drive.google.com/file/d/1yX5JRfb7KFqAfjquoJ41oxwrB7p0zcpL/preview"
+    },
+    {
+        "title": "Buenas Comp 3",
+        "category": "Restaurante",
+        "description": "Edição comercial com alto padrão de finalização",
+        "tools": "Premiere Pro",
+        "duration": "0:33",
+        "driveLink": "https://drive.google.com/file/d/1pvbrJ3pVzix2uQFhCvPo6H-3MOZQkmB4/preview"
+    },
+    {
+        "title": "ASMR BUENAS",
+        "category": "Restaurante",
+        "description": "Experiência sonora imersiva de corte e preparo",
+        "tools": "Premiere Pro",
+        "duration": "0:31",
+        "driveLink": "https://drive.google.com/file/d/1d0E8dslO30DxUwLu6HSPSC1Irgc5XXAr/preview"
+    },
+    {
+        "title": "Roteiro 03 - Open Wine",
+        "category": "Restaurante",
+        "description": "Apresentação comercial com cortes de alta retenção",
+        "tools": "Premiere Pro",
+        "duration": "0:19",
+        "driveLink": "https://drive.google.com/file/d/1MNCq0gQY8sX4JPNip7JSKLqRaipPfBey/preview"
+    },
+    {
+        "title": "Roteiro 11 - Vinho Seco",
+        "category": "Restaurante",
+        "description": "Humor e dinamismo aplicados a restaurantes",
+        "tools": "Premiere Pro",
+        "duration": "0:24",
+        "driveLink": "https://drive.google.com/file/d/1rDn_pEi-tepJm9FHYJKZfKSkSwzRKrbh/preview"
+    },
+    {
+        "title": "Buenas Influencer Vinho",
+        "category": "Restaurante",
+        "description": "Conteúdo com influenciador em formato Reels",
+        "tools": "Premiere Pro",
+        "duration": "0:26",
+        "driveLink": "https://drive.google.com/file/d/1BbF8BElyFOxPWXQF2HyUUTKSPv6vptNq/preview"
+    },
+    {
+        "title": "Roteiro 18 - Seu Prato Favorito",
+        "category": "Restaurante",
+        "description": "Vídeo longo de gastronomia com retenção contínua",
+        "tools": "Premiere Pro",
+        "duration": "1:00",
+        "driveLink": "https://drive.google.com/file/d/17tHa4BWEOSqZi7SARa5BNTkrqf62luyx/preview"
+    },
+    {
+        "title": "Roteiro 09 - Garçom e o Prato",
+        "category": "Restaurante",
+        "description": "Esquete cômico gastronômico com legendas dinâmicas",
+        "tools": "Premiere Pro",
+        "duration": "0:29",
+        "driveLink": "https://drive.google.com/file/d/1Ovzxd-qlgriQv8ULURW_hzs64ivQ2exW/preview"
+    },
+    {
+        "title": "Buenas Funcionários",
+        "category": "Restaurante",
+        "description": "Apresentação humanizada e bastidores da equipe",
+        "tools": "Premiere Pro",
+        "duration": "0:47",
+        "driveLink": "https://drive.google.com/file/d/1wloKq8lG3-dGrrgywhtR3Oa4p7jTxDYt/preview"
+    },
+    {
+        "title": "Roteiro 11 - Escolhendo o Drink",
+        "category": "Restaurante",
+        "description": "Cortes rápidos e decisão do cliente no bar",
+        "tools": "Premiere Pro",
+        "duration": "0:09",
+        "driveLink": "https://drive.google.com/file/d/1881QoFyAPe2lTT6F6AKBPK4jEYyK3NaS/preview"
+    },
+    {
+        "title": "Roteiro 02 - Qual você prefere?",
+        "category": "Restaurante",
+        "description": "Engajamento e enquete visual em formato Stories/Reels",
+        "tools": "Premiere Pro",
+        "duration": "0:23",
+        "driveLink": "https://drive.google.com/file/d/1XEtbyefuF08hEzdn8U5U8FQYhUSXoylW/preview"
+    },
+    {
+        "title": "Conteúdos Pétala Lumina 1",
+        "category": "Restaurante",
+        "description": "Edição institucional de alta estética",
+        "tools": "Premiere Pro",
+        "duration": "0:49",
+        "driveLink": "https://drive.google.com/file/d/1wVSPTfBcD-6gg2EU98ZiQf6nsxjsy1xD/preview"
+    },
+    {
+        "title": "Vídeo Comercial Especial",
+        "category": "Restaurante",
+        "description": "Composição cinematográfica de pratos refinados",
+        "tools": "Premiere Pro",
+        "duration": "0:59",
+        "driveLink": "https://drive.google.com/file/d/1KJPUXOTII3zWpjBi5x4WJ6DIqIq69HyE/preview"
     },
     {
         "title": "Documentário Cantiga de Roda",

@@ -4,6 +4,12 @@ import { videos } from './data.js';
 const ITEMS_PER_PAGE = 12;
 let currentFilter = 'all';
 let currentPage = 1;
+let activeVideos = [...videos];
+
+// --- Google Drive API Configuration ---
+const GOOGLE_API_KEY = 'AIzaSyD8q_zmyrdyLnsrkhAgtbEL_wfSVozisL8';
+const PREVIEW_FOLDER_ID = '1fejhjwZu1yeN7ehQfMx5qauLVsAKL1UH';
+const RESTAURANTE_FOLDER_ID = '1TSMC5rpArmHGiqdClhMi68Lrfp6Q9KxJ';
 
 // --- DOM Elements ---
 const galleryGrid = document.getElementById('gallery-grid');
@@ -57,7 +63,7 @@ function getEmbedUrl(driveLink) {
  */
 function getThumbnail(video) {
     const id = getFileId(video.driveLink);
-    if (id && video.driveLink.includes('/file/d/')) {
+    if (id && video.driveLink && video.driveLink.includes('/file/d/')) {
         return `https://drive.google.com/thumbnail?id=${id}&sz=w600-h800`;
     }
     // High aesthetic dark gradient placeholder with video category
@@ -73,8 +79,8 @@ function getThumbnail(video) {
             <rect width="600" height="338" fill="url(#g)"/>
             <circle cx="300" cy="150" r="42" fill="#bb00ff" fill-opacity="0.2" stroke="#bb00ff" stroke-width="2"/>
             <polygon points="292,135 318,150 292,165" fill="#ffffff"/>
-            <text x="300" y="235" font-family="'Outfit', sans-serif" font-weight="700" font-size="20" fill="#bb00ff" text-anchor="middle" letter-spacing="3">${video.category.toUpperCase()}</text>
-            <text x="300" y="265" font-family="'Inter', sans-serif" font-size="14" fill="#888888" text-anchor="middle">${video.title}</text>
+            <text x="300" y="235" font-family="'Outfit', sans-serif" font-weight="700" font-size="20" fill="#bb00ff" text-anchor="middle" letter-spacing="3">${(video.category || 'VÍDEO').toUpperCase()}</text>
+            <text x="300" y="265" font-family="'Inter', sans-serif" font-size="14" fill="#888888" text-anchor="middle">${video.title || ''}</text>
         </svg>
     `)}`;
 }
@@ -85,7 +91,7 @@ function getThumbnail(video) {
  */
 function getInterleavedVideos() {
     const categories = {};
-    videos.forEach(v => {
+    activeVideos.forEach(v => {
         if (!categories[v.category]) {
             categories[v.category] = [];
         }
@@ -120,7 +126,7 @@ function getFilteredList(filter) {
     if (filter === 'all') {
         return getInterleavedVideos();
     }
-    return videos.filter(v => v.category.toLowerCase() === filter.toLowerCase());
+    return activeVideos.filter(v => v.category.toLowerCase() === filter.toLowerCase());
 }
 
 // --- Render Functions ---
@@ -154,7 +160,7 @@ function createVideoCard(video) {
                 <rect width="600" height="338" fill="#111116"/>
                 <circle cx="300" cy="150" r="38" fill="#bb00ff" fill-opacity="0.2" stroke="#bb00ff" stroke-width="2"/>
                 <polygon points="293,137 315,150 293,163" fill="#ffffff"/>
-                <text x="300" y="230" font-family="'Outfit', sans-serif" font-weight="700" font-size="18" fill="#bb00ff" text-anchor="middle" letter-spacing="2">${video.category.toUpperCase()}</text>
+                <text x="300" y="230" font-family="'Outfit', sans-serif" font-weight="700" font-size="18" fill="#bb00ff" text-anchor="middle" letter-spacing="2">${(video.category || 'VÍDEO').toUpperCase()}</text>
             </svg>
         `)}`;
     };
@@ -274,7 +280,7 @@ function openModal(video) {
 
     // Dynamically update WhatsApp button with the specific video name
     if (modalWaBtn) {
-        const customMessage = `Olá, Kelve! Vim pelo seu portfólio e gostei muito do estilo do vídeo "${video.title}" (${video.category}). Gostaria de conversar sobre um projeto semelhante.`;
+        const customMessage = `Olá, Kelve! Vim pelo seu portfólio e gostei muito do estilo do vídeo "${video.title}" (${video.category || 'Edição'}). Gostaria de conversar sobre um projeto semelhante.`;
         modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
     }
 
@@ -303,17 +309,26 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// --- Init ---
-updateGallery();
+// --- Google Drive Fetch Utility ---
+async function fetchFolderVideos(folderId) {
+    if (!GOOGLE_API_KEY || !folderId) return [];
+    try {
+        const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,videoMediaMetadata)&key=${GOOGLE_API_KEY}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return (data.files || []).filter(f => f.mimeType && (f.mimeType.startsWith('video/') || f.name.match(/\.(mp4|mov|webm)$/i)));
+    } catch (err) {
+        console.warn('Drive fetch error:', err);
+        return [];
+    }
+}
 
-// --- Video Reel Strip ---
-function buildReel() {
+// --- Video Reel Strip (Top Previews) ---
+async function buildReel() {
     const reelTrack = document.getElementById('reel-track');
     const reelWrapper = document.getElementById('reel-strip-wrapper');
     if (!reelTrack || !reelWrapper) return;
-
-    const reelVideos = videos.filter(v => v.category.toLowerCase() === 'restaurante');
-    if (reelVideos.length === 0) return;
 
     let isHovered = false;
     let isVisible = true;
@@ -349,15 +364,79 @@ function buildReel() {
         return item;
     }
 
-    // 4× duplicação — animate -25% para loop perfeitamente contínuo
-    for (let i = 0; i < 4; i++) {
-        reelVideos.forEach(video => reelTrack.appendChild(createReelItem(video)));
+    // Nomes prioritários solicitados pelo usuário
+    const priorityNames = [
+        '250925 Roteiro 19 Trend - Drink que Cai e Volta',
+        '251128 Faça seu Evento aqui',
+        '251119 Buenas Comp 1',
+        '260129 Video Modelo Aline',
+        '01 Efeito+Espanhol',
+        '250912 Happy Hour Drinks',
+        '250917 Marmita Ironberg 2'
+    ];
+
+    function normalize(str) {
+        return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     }
 
-    // Velocidade: ~80px por segundo, dinamicamente calculada
+    // Busca vídeos da pasta de Preview
+    const driveFiles = await fetchFolderVideos(PREVIEW_FOLDER_ID);
+    let reelVideos = [];
+
+    if (driveFiles.length > 0) {
+        const mapped = driveFiles.map(f => ({
+            title: f.name.replace(/\.mp4$/i, '').trim(),
+            category: 'Preview',
+            driveLink: `https://drive.google.com/file/d/${f.id}/preview`,
+            rawName: f.name
+        }));
+
+        const matchedPriority = [];
+        const remaining = [];
+
+        priorityNames.forEach(pName => {
+            const pNorm = normalize(pName);
+            const foundIdx = mapped.findIndex(f => normalize(f.rawName).includes(pNorm) || pNorm.includes(normalize(f.rawName)));
+            if (foundIdx !== -1) {
+                matchedPriority.push(mapped[foundIdx]);
+            }
+        });
+
+        mapped.forEach(f => {
+            if (!matchedPriority.some(p => p.driveLink === f.driveLink)) {
+                remaining.push(f);
+            }
+        });
+
+        // Intercala 1 prioritário, 1 outro, 1 prioritário, 1 outro... e depois os restantes
+        let rIdx = 0;
+        matchedPriority.forEach(p => {
+            reelVideos.push(p);
+            if (rIdx < remaining.length) {
+                reelVideos.push(remaining[rIdx++]);
+            }
+        });
+        while (rIdx < remaining.length) {
+            reelVideos.push(remaining[rIdx++]);
+        }
+    } else {
+        // Fallback local se estiver offline
+        reelVideos = activeVideos.filter(v => v.category.toLowerCase() === 'restaurante');
+    }
+
+    if (reelVideos.length === 0) return;
+
+    reelTrack.innerHTML = '';
+
+    // Duplicação 1:1 para ciclo contínuo sem repetições excedentes por cena
+    [...reelVideos, ...reelVideos].forEach(video => {
+        reelTrack.appendChild(createReelItem(video));
+    });
+
+    // Velocidade de deslocamento: ~70px por segundo
     const ITEM_WIDTH = 189; // 175px + 14px gap
     const singleSetPx = reelVideos.length * ITEM_WIDTH;
-    const duration = Math.max(15, singleSetPx / 80);
+    const duration = Math.max(20, singleSetPx / 70);
     reelTrack.style.animationDuration = `${duration.toFixed(1)}s`;
 
     // Hover (desktop): pausa suave
@@ -367,11 +446,10 @@ function buildReel() {
     // Touch (mobile): pausa ao segurar, retoma ao soltar
     reelWrapper.addEventListener('touchstart', () => { isHovered = true; syncPlayState(); }, { passive: true });
     reelWrapper.addEventListener('touchend', () => {
-        // pequeno delay para o click do openModal ser registrado antes de retomar
         setTimeout(() => { isHovered = false; syncPlayState(); }, 350);
     }, { passive: true });
 
-    // IntersectionObserver: pausa quando fora de vista (economiza CPU/GPU)
+    // IntersectionObserver: pausa quando fora de vista
     const io = new IntersectionObserver(([entry]) => {
         isVisible = entry.isIntersecting;
         syncPlayState();
@@ -379,7 +457,39 @@ function buildReel() {
     io.observe(reelWrapper);
 }
 
-buildReel();
+// --- Dynamic Google Drive Category Sync (Restaurante) ---
+async function syncDriveCategories() {
+    const driveFiles = await fetchFolderVideos(RESTAURANTE_FOLDER_ID);
+    if (!driveFiles || driveFiles.length === 0) return;
+
+    const syncedRestaurante = driveFiles.map(f => {
+        let dur = '0:30';
+        if (f.videoMediaMetadata && f.videoMediaMetadata.durationMillis) {
+            const sec = Math.round(f.videoMediaMetadata.durationMillis / 1000);
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            dur = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+        let cleanTitle = f.name.replace(/\.mp4$/i, '').replace(/^\d+\s*/, '').trim();
+        return {
+            title: cleanTitle || f.name,
+            category: 'Restaurante',
+            description: 'Edição sensorial e comercial para gastronomia',
+            tools: 'Premiere Pro',
+            duration: dur,
+            driveLink: `https://drive.google.com/file/d/${f.id}/preview`
+        };
+    });
+
+    // Substitui a categoria Restaurante pelos dados dinâmicos mais recentes
+    const otherVideos = activeVideos.filter(v => v.category.toLowerCase() !== 'restaurante');
+    activeVideos = [...otherVideos, ...syncedRestaurante];
+
+    // Atualiza a galeria se o usuário estiver vendo 'all' ou 'Restaurante'
+    if (currentFilter === 'all' || currentFilter.toLowerCase() === 'restaurante') {
+        updateGallery();
+    }
+}
 
 // --- Filters Scroll Hint (mobile) ---
 function initFiltersHint() {
@@ -398,27 +508,22 @@ function initFiltersHint() {
         hintWrapper.classList.toggle('at-end', atEnd);
     }, { passive: true });
 
-    // Remove hint para sempre na primeira interação do usuário
+    // Remove hint na primeira interação
     filtersEl.addEventListener('touchstart', () => {
         hintWrapper.classList.remove('hint-animate');
     }, { once: true, passive: true });
 
-    // IntersectionObserver: faz o "peek" quando a seção fica visível pela primeira vez
+    // Peek automático na primeira visualização
     let peeked = false;
     const io = new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting && !peeked) {
             peeked = true;
             io.disconnect();
 
-            // Delay para a animação de entrada da seção terminar
             setTimeout(() => {
-                // Pulsa o gradiente para chamar atenção
                 hintWrapper.classList.add('hint-animate');
-
-                // Scroll suave para direita (peek) e volta
                 filtersEl.scrollTo({ left: 100, behavior: 'smooth' });
                 setTimeout(() => {
-                    // Só volta se o usuário não arrastou ainda
                     if (filtersEl.scrollLeft <= 110) {
                         filtersEl.scrollTo({ left: 0, behavior: 'smooth' });
                     }
@@ -430,4 +535,8 @@ function initFiltersHint() {
     io.observe(hintWrapper);
 }
 
+// --- Initialize App ---
+updateGallery();
+buildReel();
+syncDriveCategories();
 initFiltersHint();
