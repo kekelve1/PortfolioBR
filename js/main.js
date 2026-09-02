@@ -20,6 +20,7 @@ const closeModalBtn = document.querySelector('.close-modal');
 const modalVideo = document.getElementById('modal-video');
 const modalIframe = document.getElementById('modal-iframe');
 const modalTitle = document.getElementById('modal-title');
+const modalHeaderTitle = document.getElementById('modal-header-title');
 const modalWaBtn = document.getElementById('modal-wa-btn');
 
 // --- Helper Functions ---
@@ -284,7 +285,8 @@ function handleFilter(e) {
 
 function openModal(video) {
     const fileId = getFileId(video.driveLink);
-    modalTitle.textContent = video.title;
+    if (modalTitle) modalTitle.textContent = video.title;
+    if (modalHeaderTitle) modalHeaderTitle.textContent = video.title;
 
     // Dynamically update WhatsApp button with the specific video name
     if (modalWaBtn) {
@@ -296,14 +298,12 @@ function openModal(video) {
         const streamUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
         const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
 
-        // Tenta reprodução nativa HTML5 (limpa, sem tela preta do Google Drive)
         if (modalVideo) {
             modalVideo.style.display = 'block';
             modalIframe.style.display = 'none';
             modalVideo.src = streamUrl;
 
             modalVideo.onerror = () => {
-                // Fallback automático para o iframe caso o stream direto seja bloqueado
                 modalVideo.style.display = 'none';
                 modalVideo.src = '';
                 modalIframe.style.display = 'block';
@@ -340,6 +340,15 @@ function closeModal() {
         modalIframe.style.display = 'none';
     }
     document.body.style.overflow = '';
+
+    // Se estiver em fullscreen nativo, sai automaticamente
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
 }
 
 // --- Event Listeners ---
@@ -366,16 +375,19 @@ function toggleFullscreen() {
             wrapper.requestFullscreen();
         }
     } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
+        closeModal();
     }
 }
 
 if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
 if (popoutBlocker) popoutBlocker.addEventListener('click', toggleFullscreen);
+
+// Fecha o vídeo quando o usuário sai do modo tela cheia do navegador
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && modal.classList.contains('active')) {
+        // Usuário saiu do modo tela cheia nativo
+    }
+});
 
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
