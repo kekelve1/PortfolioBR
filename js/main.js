@@ -1,122 +1,291 @@
 import { videos } from './data.js';
 
+// --- Configuration ---
+const ITEMS_PER_PAGE = 12;
+let currentFilter = 'all';
+let currentPage = 1;
+
 // --- DOM Elements ---
 const galleryGrid = document.getElementById('gallery-grid');
+const paginationContainer = document.getElementById('pagination-container');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const modal = document.getElementById('video-modal');
 const closeModalBtn = document.querySelector('.close-modal');
 const modalIframe = document.getElementById('modal-iframe');
 const modalTitle = document.getElementById('modal-title');
-const modalDesc = document.getElementById('modal-desc');
-const modalTags = document.getElementById('modal-tags');
+const modalWaBtn = document.getElementById('modal-wa-btn');
 
 // --- Helper Functions ---
 
 /**
- * Extracts the File ID from a Google Drive URL and returns the embed URL.
- * Supports typical formats like /file/d/ID/view or /file/d/ID/preview
- */
-/**
- * Extracts the File ID from a Google Drive URL
+ * Extracts the Google Drive File ID from URL
  */
 function getFileId(driveLink) {
+    if (!driveLink) return null;
     try {
-        const idMatch = driveLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        return (idMatch && idMatch[1]) ? idMatch[1] : null;
+        const idMatch = driveLink.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (idMatch && idMatch[1]) return idMatch[1];
+        
+        const folderMatch = driveLink.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+        if (folderMatch && folderMatch[1]) return folderMatch[1];
+        
+        const queryMatch = driveLink.match(/id=([a-zA-Z0-9_-]+)/);
+        if (queryMatch && queryMatch[1]) return queryMatch[1];
+
+        return null;
     } catch (e) {
         return null;
     }
 }
 
+/**
+ * Generates the embed URL for iframe
+ */
 function getEmbedUrl(driveLink) {
     const id = getFileId(driveLink);
-    if (id) {
-        // Autoplay removed to fix infinite loading/spinner issues on some browsers
+    if (id && driveLink.includes('/file/d/')) {
         return `https://drive.google.com/file/d/${id}/preview`;
+    }
+    if (driveLink.includes('/folders/')) {
+        return driveLink;
     }
     return driveLink;
 }
 
+/**
+ * Generates the high-res thumbnail URL or fallback SVG
+ */
 function getThumbnail(video) {
     const id = getFileId(video.driveLink);
-    if (id) {
-        // High-res numeric params: w600-h400 (just examples to force larger)
+    if (id && video.driveLink.includes('/file/d/')) {
         return `https://drive.google.com/thumbnail?id=${id}&sz=w600-h800`;
     }
-    // Fallback
-    return `https://source.unsplash.com/800x450/?technology,camera,film&sig=${video.title.length}`;
+    // High aesthetic dark gradient placeholder with video category
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="338" viewBox="0 0 600 338">
+            <defs>
+                <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#180a22"/>
+                    <stop offset="50%" stop-color="#0a0a0f"/>
+                    <stop offset="100%" stop-color="#12051c"/>
+                </linearGradient>
+            </defs>
+            <rect width="600" height="338" fill="url(#g)"/>
+            <circle cx="300" cy="150" r="42" fill="#bb00ff" fill-opacity="0.2" stroke="#bb00ff" stroke-width="2"/>
+            <polygon points="292,135 318,150 292,165" fill="#ffffff"/>
+            <text x="300" y="235" font-family="'Outfit', sans-serif" font-weight="700" font-size="20" fill="#bb00ff" text-anchor="middle" letter-spacing="3">${video.category.toUpperCase()}</text>
+            <text x="300" y="265" font-family="'Inter', sans-serif" font-size="14" fill="#888888" text-anchor="middle">${video.title}</text>
+        </svg>
+    `)}`;
+}
+
+/**
+ * Interleaves videos from different categories for "Todos" view
+ * to ensure high diversity across page 1 and subsequent pages.
+ */
+function getInterleavedVideos() {
+    const categories = {};
+    videos.forEach(v => {
+        if (!categories[v.category]) {
+            categories[v.category] = [];
+        }
+        categories[v.category].push(v);
+    });
+
+    const catKeys = Object.keys(categories);
+    const result = [];
+    let maxLength = 0;
+
+    catKeys.forEach(k => {
+        if (categories[k].length > maxLength) {
+            maxLength = categories[k].length;
+        }
+    });
+
+    for (let i = 0; i < maxLength; i++) {
+        catKeys.forEach(k => {
+            if (categories[k][i]) {
+                result.push(categories[k][i]);
+            }
+        });
+    }
+
+    return result;
+}
+
+/**
+ * Gets all items matching the current filter
+ */
+function getFilteredList(filter) {
+    if (filter === 'all') {
+        return getInterleavedVideos();
+    }
+    return videos.filter(v => v.category.toLowerCase() === filter.toLowerCase());
 }
 
 // --- Render Functions ---
 
 function createVideoCard(video) {
     const card = document.createElement('div');
-    card.classList.add('video-card');
+    card.classList.add('video-card', 'fade-in-up');
     card.setAttribute('data-category', video.category);
 
     const thumbUrl = getThumbnail(video);
 
     card.innerHTML = `
         <div class="thumbnail-wrapper">
-            <img src="${thumbUrl}" alt="${video.title}" class="thumbnail-img">
+            <img src="${thumbUrl}" alt="${video.title}" class="thumbnail-img" loading="lazy">
             <div class="play-icon">
                 <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
+            <span class="video-duration-badge">${video.duration || 'Vídeo'}</span>
         </div>
         <div class="card-info">
             <h3 class="card-title">${video.title}</h3>
-            <p class="card-category">${video.category} • ${video.duration}</p>
+            <p class="card-category">${video.category}</p>
         </div>
     `;
+
+    // Handle thumbnail error fallback
+    const img = card.querySelector('.thumbnail-img');
+    img.onerror = () => {
+        img.src = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="600" height="338" viewBox="0 0 600 338">
+                <rect width="600" height="338" fill="#111116"/>
+                <circle cx="300" cy="150" r="38" fill="#bb00ff" fill-opacity="0.2" stroke="#bb00ff" stroke-width="2"/>
+                <polygon points="293,137 315,150 293,163" fill="#ffffff"/>
+                <text x="300" y="230" font-family="'Outfit', sans-serif" font-weight="700" font-size="18" fill="#bb00ff" text-anchor="middle" letter-spacing="2">${video.category.toUpperCase()}</text>
+            </svg>
+        `)}`;
+    };
 
     card.addEventListener('click', () => openModal(video));
     return card;
 }
 
-function renderGallery(filter = 'all') {
+function renderPagination(totalItems) {
+    if (!paginationContainer) return;
+    paginationContainer.innerHTML = '';
+
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+    if (totalPages <= 1) return;
+
+    const nav = document.createElement('div');
+    nav.classList.add('pagination');
+
+    // Prev Button
+    const prevBtn = document.createElement('button');
+    prevBtn.classList.add('page-btn', 'prev-btn');
+    prevBtn.innerHTML = '&larr; Anterior';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            updateGallery();
+            scrollToGallery();
+        }
+    });
+    nav.appendChild(prevBtn);
+
+    // Page Numbers
+    const numContainer = document.createElement('div');
+    numContainer.classList.add('page-numbers');
+
+    for (let p = 1; p <= totalPages; p++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.classList.add('page-num');
+        if (p === currentPage) pageBtn.classList.add('active');
+        pageBtn.textContent = p;
+        pageBtn.addEventListener('click', () => {
+            if (currentPage !== p) {
+                currentPage = p;
+                updateGallery();
+                scrollToGallery();
+            }
+        });
+        numContainer.appendChild(pageBtn);
+    }
+    nav.appendChild(numContainer);
+
+    // Next Button
+    const nextBtn = document.createElement('button');
+    nextBtn.classList.add('page-btn', 'next-btn');
+    nextBtn.innerHTML = 'Próximo &rarr;';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateGallery();
+            scrollToGallery();
+        }
+    });
+    nav.appendChild(nextBtn);
+
+    paginationContainer.appendChild(nav);
+}
+
+function updateGallery() {
     galleryGrid.innerHTML = '';
+    const fullList = getFilteredList(currentFilter);
+    const totalItems = fullList.length;
 
-    // Add fade-in animation logic if needed, but simple render first
-    const filteredVideos = filter === 'all'
-        ? videos
-        : videos.filter(v => v.category === filter);
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = 1;
 
-    filteredVideos.forEach(video => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedItems = fullList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    paginatedItems.forEach(video => {
         const card = createVideoCard(video);
         galleryGrid.appendChild(card);
     });
+
+    renderPagination(totalItems);
+}
+
+function scrollToGallery() {
+    const workSection = document.getElementById('work');
+    if (workSection) {
+        const rect = workSection.getBoundingClientRect();
+        if (rect.top < 0 || rect.top > window.innerHeight) {
+            workSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 }
 
 // --- Interaction Logic ---
 
 function handleFilter(e) {
-    // Remove active class from all
-    filterBtns.forEach(btn => btn.classList.remove('active'));
-    // Add to clicked
-    e.target.classList.add('active');
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
 
-    const category = e.target.getAttribute('data-category');
-    renderGallery(category);
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentFilter = btn.getAttribute('data-category');
+    currentPage = 1;
+    updateGallery();
 }
 
 function openModal(video) {
     const embedUrl = getEmbedUrl(video.driveLink);
 
     modalTitle.textContent = video.title;
-    // User requested to remove description and tools from the modal
-    modalDesc.textContent = '';
-    modalTags.textContent = '';
 
-    // Set iframe src
+    // Dynamically update WhatsApp button with the specific video name
+    if (modalWaBtn) {
+        const customMessage = `Olá, Kelve! Vim pelo seu portfólio e gostei muito do estilo do vídeo "${video.title}" (${video.category}). Gostaria de conversar sobre um projeto semelhante.`;
+        modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
+    }
+
     modalIframe.src = embedUrl;
-
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
+    document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     modal.classList.remove('active');
-    modalIframe.src = ''; // Stop video
+    modalIframe.src = '';
     document.body.style.overflow = '';
 }
 
@@ -124,35 +293,15 @@ function closeModal() {
 filterBtns.forEach(btn => btn.addEventListener('click', handleFilter));
 closeModalBtn.addEventListener('click', closeModal);
 
-// Close on outside click
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
 
-// Escape key to close
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('active')) {
         closeModal();
     }
 });
 
-// --- Scroll Animations ---
-const observerOptions = {
-    threshold: 0.1
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('fade-in-up');
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-document.querySelectorAll('.video-card, .section-title').forEach(el => {
-    observer.observe(el);
-});
-
 // --- Init ---
-renderGallery();
+updateGallery();
