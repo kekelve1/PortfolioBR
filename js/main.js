@@ -17,10 +17,8 @@ const paginationContainer = document.getElementById('pagination-container');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const modal = document.getElementById('video-modal');
 const closeModalBtn = document.querySelector('.close-modal');
-const modalVideo = document.getElementById('modal-video');
 const modalIframe = document.getElementById('modal-iframe');
 const modalTitle = document.getElementById('modal-title');
-const modalHeaderTitle = document.getElementById('modal-header-title');
 const modalWaBtn = document.getElementById('modal-wa-btn');
 
 // --- Helper Functions ---
@@ -286,108 +284,32 @@ function handleFilter(e) {
 function openModal(video) {
     const fileId = getFileId(video.driveLink);
     if (modalTitle) modalTitle.textContent = video.title;
-    if (modalHeaderTitle) modalHeaderTitle.textContent = video.title;
 
-    // Dynamically update WhatsApp button with the specific video name
     if (modalWaBtn) {
         const customMessage = `Olá, Kelve! Vim pelo seu portfólio e gostei muito do estilo do vídeo "${video.title}" (${video.category || 'Edição'}). Gostaria de conversar sobre um projeto semelhante.`;
         modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
     }
 
-    if (fileId) {
-        const streamUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
-        const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+    // Usa sempre o iframe embed do Google Drive
+    const embedUrl = fileId
+        ? `https://drive.google.com/file/d/${fileId}/preview`
+        : getEmbedUrl(video.driveLink);
 
-        if (modalVideo) {
-            modalVideo.style.display = 'block';
-            modalIframe.style.display = 'none';
-            modalVideo.src = streamUrl;
-
-            modalVideo.onerror = () => {
-                modalVideo.style.display = 'none';
-                modalVideo.src = '';
-                modalIframe.style.display = 'block';
-                modalIframe.src = embedUrl;
-            };
-
-            modalVideo.play().catch(() => {});
-        } else {
-            modalIframe.style.display = 'block';
-            modalIframe.src = embedUrl;
-        }
-    } else {
-        if (modalVideo) {
-            modalVideo.style.display = 'none';
-            modalVideo.src = '';
-        }
-        modalIframe.style.display = 'block';
-        modalIframe.src = getEmbedUrl(video.driveLink);
-    }
-
+    modalIframe.src = embedUrl;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     modal.classList.remove('active');
-    if (modalVideo) {
-        modalVideo.pause();
-        modalVideo.src = '';
-        modalVideo.style.display = 'none';
-    }
-    if (modalIframe) {
-        modalIframe.src = '';
-        modalIframe.style.display = 'none';
-    }
+    modalIframe.src = '';
     document.body.style.overflow = '';
-
-    // Se estiver em fullscreen nativo, sai automaticamente
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {});
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-    }
 }
+
 
 // --- Event Listeners ---
 filterBtns.forEach(btn => btn.addEventListener('click', handleFilter));
 closeModalBtn.addEventListener('click', closeModal);
-
-const fullscreenBtn = document.getElementById('fullscreen-btn');
-const popoutBlocker = document.querySelector('.drive-popout-blocker');
-
-function toggleFullscreen() {
-    const wrapper = document.getElementById('video-wrapper');
-    const iframe = document.getElementById('modal-iframe');
-    const video = document.getElementById('modal-video');
-    const target = (video && video.style.display !== 'none' ? video : null) || iframe || wrapper;
-
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (target && target.requestFullscreen) {
-            target.requestFullscreen().catch(() => {
-                if (wrapper && wrapper.requestFullscreen) wrapper.requestFullscreen();
-            });
-        } else if (target && target.webkitRequestFullscreen) {
-            target.webkitRequestFullscreen();
-        } else if (wrapper && wrapper.requestFullscreen) {
-            wrapper.requestFullscreen();
-        }
-    } else {
-        closeModal();
-    }
-}
-
-if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
-if (popoutBlocker) popoutBlocker.addEventListener('click', toggleFullscreen);
-
-// Fecha o vídeo quando o usuário sai do modo tela cheia do navegador
-document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && modal.classList.contains('active')) {
-        // Usuário saiu do modo tela cheia nativo
-    }
-});
 
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
@@ -398,6 +320,7 @@ document.addEventListener('keydown', (e) => {
         closeModal();
     }
 });
+
 
 // --- Google Drive Fetch Utility with Smart Cache ---
 async function fetchFolderVideos(folderId) {

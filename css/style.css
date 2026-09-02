@@ -744,22 +744,20 @@ h3 {
     opacity: 1;
 }
 
-/* Modal em Tela Cheia Imersiva */
+/* ─── Modal Limpo ─── */
 .modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100vw;
     height: 100%;
     height: 100dvh;
-    background: #000000;
+    background: #000;
     z-index: 9999;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: stretch;
     opacity: 0;
-    transition: opacity 0.25s ease;
-    padding: 0;
+    transition: opacity 0.2s ease;
     overflow: hidden;
 }
 
@@ -771,141 +769,73 @@ h3 {
 .modal-content {
     width: 100%;
     height: 100%;
-    max-width: 100%;
-    max-height: 100dvh;
-    background: #000000;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
     position: relative;
+    background: #000;
     overflow: hidden;
 }
 
-.modal-header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 24px;
-    background: rgba(10, 10, 12, 0.95);
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    z-index: 30;
-    flex-shrink: 0;
-}
-
-.modal-header-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: 15px;
-}
-
-.modal-header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.btn-fullscreen-modal {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(187, 0, 255, 0.15);
-    border: 1px solid rgba(187, 0, 255, 0.4);
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 0.82rem;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.btn-fullscreen-modal:hover {
-    background: var(--accent-color);
-    box-shadow: 0 0 15px rgba(187, 0, 255, 0.4);
-    transform: translateY(-1px);
-}
-
-.btn-fullscreen-modal svg {
-    fill: currentColor;
-}
-
+/* Botão fechar: flutuante sobre o vídeo, canto superior direito */
 .close-modal {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     color: white;
-    font-size: 22px;
+    font-size: 24px;
+    line-height: 1;
     cursor: pointer;
-    transition: 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    transition: background 0.2s;
 }
 
 .close-modal:hover {
     background: #e50914;
     border-color: #e50914;
-    transform: scale(1.08);
 }
 
+/* Wrapper do vídeo ocupa todo o espaço restante */
 .video-wrapper {
     flex: 1;
     width: 100%;
-    height: 100%;
     position: relative;
     background: #000;
     overflow: hidden;
-    padding-bottom: 0 !important;
-}
-
-/* Bloqueia o botão popout nativo do Google Drive no canto superior direito */
-.drive-popout-blocker {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 60px;
-    height: 60px;
-    background: transparent;
-    z-index: 20;
-    cursor: pointer;
+    min-height: 0;
 }
 
 .modal-video-player,
 .modal-iframe-player {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
-    object-fit: contain;
     background: #000;
 }
 
+/* Barra inferior com título + WhatsApp */
 .modal-info {
-    padding: 14px 24px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
     background: rgba(10, 10, 12, 0.95);
-    backdrop-filter: blur(15px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.07);
     flex-shrink: 0;
-    z-index: 30;
+    z-index: 10;
 }
+
 
 #modal-title {
     font-size: 1.3rem;
@@ -1189,93 +1119,25 @@ body {
         gap: 25px;
     }
 
-    /* Modal mobile: TELA CHEIA IMERSIVA TOTAL (100vw x 100dvh) */
-    .modal {
-        height: 100%;
-        height: 100dvh;
-        width: 100vw;
-        align-items: stretch;
-        justify-content: stretch;
-        padding: 0;
-    }
-
-    .modal-content {
-        margin: 0;
-        width: 100vw;
-        height: 100%;
-        height: 100dvh;
-        max-width: 100vw;
-        max-height: 100dvh;
-        overflow: hidden;
-        border-radius: 0;
-        background: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .modal-header-actions {
-        padding: 10px 14px;
-        padding-top: max(10px, env(safe-area-inset-top));
-        background: rgba(10, 10, 12, 0.95);
-    }
-
-    .btn-fullscreen-modal {
-        display: none; /* Já está em tela cheia total no mobile */
-    }
-
+    /* Modal mobile: botão fechar respeita safe area do iPhone */
     .close-modal {
-        position: static;
-        width: 32px;
-        height: 32px;
-        font-size: 20px;
-    }
-
-    /* O vídeo ocupa 100% do espaço central da tela do celular */
-    .video-wrapper {
-        flex: 1;
-        width: 100% !important;
-        height: 100% !important;
-        position: relative;
-        padding-bottom: 0 !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        background: #000;
-    }
-
-    .video-wrapper iframe,
-    .modal-video-player,
-    .modal-iframe-player {
-        position: absolute;
-        top: 0 !important;
-        left: 0;
-        width: 100% !important;
-        height: 100% !important;
-        border: 0;
-        object-fit: contain;
+        top: max(14px, env(safe-area-inset-top, 14px));
+        right: 14px;
     }
 
     .modal-info {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
         flex-direction: column;
         text-align: center;
-        gap: 8px;
-        padding: 12px 16px;
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
-        background: rgba(10, 10, 12, 0.95);
-        border-radius: 0;
-    }
-
-    #modal-title {
-        display: none; /* Já está no header superior */
     }
 
     .modal-cta-box,
     .btn-whatsapp-modal {
         width: 100%;
         justify-content: center;
-        padding: 9px 16px;
         font-size: 0.82rem;
     }
+
 
     .pagination {
         gap: 4px;
