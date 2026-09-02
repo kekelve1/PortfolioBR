@@ -785,15 +785,17 @@ h3 {
     position: relative;
     padding-bottom: 56.25%;
     height: 0;
+    overflow: hidden;
     background: black;
 }
 
 .video-wrapper iframe {
     position: absolute;
-    top: 0;
+    top: -46px;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: calc(100% + 46px);
+    border: 0;
 }
 
 .modal-info {
@@ -1089,49 +1091,58 @@ body {
         gap: 25px;
     }
 
-    /* Modal mobile: altura cinematográfica confortável e botão fechar limpo */
+    /* Modal mobile: player limpo sem barras do Drive e sem faixas pretas */
     .modal {
         height: 100dvh;
         align-items: center;
         padding: 16px 14px;
-        padding-top: max(50px, env(safe-area-inset-top) + 40px);
+        padding-top: max(46px, env(safe-area-inset-top) + 36px);
         padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
 
     .modal-content {
         margin: auto 0;
         width: 100%;
-        max-width: 460px;
-        overflow: visible; /* Permite o botão de fechar ficar no topo sem ser cortado */
+        max-width: 440px;
+        overflow: visible;
         border-radius: 16px;
+        background: #0d0d0f;
     }
 
-    /* Botão fechar fora do player no mobile para não sobrepor a barra do Google Drive */
+    /* Botão fechar acima do player no mobile */
     .close-modal {
-        top: -46px;
-        right: 4px;
+        top: -44px;
+        right: 0;
         left: auto;
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.35);
         width: 36px;
         height: 36px;
         font-size: 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
     }
 
-    /* Player com altura cinematográfica no celular (não esmaga vídeos em faixas minúsculas) */
+    /* Player com corte inteligente que esconde a barra superior do Google Drive */
     .video-wrapper {
+        position: relative;
         padding-bottom: 0 !important;
-        height: 54vh !important;
-        min-height: 300px;
-        max-height: 520px;
+        width: 100%;
+        height: 48vh !important;
+        min-height: 250px;
+        max-height: 440px;
         border-radius: 16px 16px 0 0;
         overflow: hidden;
         background: #000;
     }
 
     .video-wrapper iframe {
+        position: absolute;
+        top: -46px !important; /* Esconde a barra do Google Drive (linha branca e botão pop-out) */
+        left: 0;
+        width: 100% !important;
+        height: calc(100% + 46px) !important;
+        border: 0;
         border-radius: 16px 16px 0 0;
     }
 
@@ -1140,6 +1151,7 @@ body {
         text-align: center;
         gap: 12px;
         padding: 16px 18px;
+        background: #0d0d0f;
         border-radius: 0 0 16px 16px;
     }
 
