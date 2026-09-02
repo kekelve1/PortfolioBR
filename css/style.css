@@ -275,6 +275,99 @@ h3 {
     overflow: hidden;
 }
 
+/* ===== Video Reel Strip ===== */
+.reel-strip-wrapper {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    z-index: 5;
+    padding: 14px 0;
+    /* espaço para o scale no hover não ser clipado */
+    /* Fade elegante nas bordas laterais */
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+}
+
+.reel-track {
+    display: flex;
+    gap: 14px;
+    width: max-content;
+    animation: reel-scroll 35s linear infinite;
+    will-change: transform;
+}
+
+@keyframes reel-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-25%); }
+}
+
+.reel-item {
+    flex-shrink: 0;
+    width: 175px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #0d0d0d;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reel-item:hover {
+    border-color: rgba(187, 0, 255, 0.7);
+    transform: scale(1.06);
+    box-shadow: 0 0 20px rgba(187, 0, 255, 0.25);
+    z-index: 10;
+}
+
+.reel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    display: block;
+    pointer-events: none;
+}
+
+.reel-item:hover img {
+    opacity: 0.95;
+}
+
+.reel-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    width: 34px;
+    height: 34px;
+    background: rgba(187, 0, 255, 0.92);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 18px rgba(187, 0, 255, 0.5);
+    pointer-events: none;
+}
+
+.reel-item:hover .reel-play-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.reel-play-btn svg {
+    fill: white;
+    width: 13px;
+    height: 13px;
+    margin-left: 2px;
+}
+
+
 .hero-content {
     max-width: 900px;
     z-index: 2;
@@ -364,12 +457,52 @@ h3 {
     padding: 100px 0;
 }
 
+.filters-scroll-hint {
+    position: relative;
+    margin-bottom: 60px;
+}
+
 .filters {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-bottom: 60px;
     flex-wrap: wrap;
+}
+
+/* Gradient fade hint — só ativo no mobile via JS adicionando .show-hint */
+.filters-scroll-hint::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: linear-gradient(to right, transparent, #050505 85%);
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.filters-scroll-hint.show-hint::after {
+    opacity: 1;
+}
+
+/* Gradiente some quando chegou no fim */
+.filters-scroll-hint.at-end::after {
+    opacity: 0 !important;
+}
+
+/* Pulse no gradiente para chamar atenção uma vez */
+@keyframes hint-pulse {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.filters-scroll-hint.hint-animate::after {
+    animation: hint-pulse 1.2s ease forwards;
 }
 
 .filter-btn {
@@ -595,6 +728,7 @@ h3 {
     left: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh; /* Dynamic viewport height — acompanha a barra do navegador mobile */
     background: rgba(0, 0, 0, 0.96);
     z-index: 3000;
     align-items: center;
@@ -602,6 +736,7 @@ h3 {
     opacity: 0;
     transition: opacity 0.3s;
     padding: 20px;
+    overflow-y: auto;
 }
 
 .modal.active {
@@ -919,6 +1054,13 @@ body {
         gap: 30px;
     }
 
+    .filters-scroll-hint {
+        margin-bottom: 40px;
+        margin-left: -20px; /* sangrar até a borda do container */
+        margin-right: -20px;
+        padding: 0 20px;
+    }
+
     .filters {
         gap: 8px;
         justify-content: flex-start;
@@ -943,6 +1085,20 @@ body {
     .gallery-grid {
         grid-template-columns: 1fr;
         gap: 25px;
+    }
+
+    /* Modal mobile: garante que o conteúdo nunca seja coberto pela barra do navegador */
+    .modal {
+        height: 100dvh;
+        align-items: flex-start;
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .modal-content {
+        margin: auto 0;
+        width: 100%;
     }
 
     .modal-info {

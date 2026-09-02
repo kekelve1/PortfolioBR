@@ -305,3 +305,129 @@ document.addEventListener('keydown', (e) => {
 
 // --- Init ---
 updateGallery();
+
+// --- Video Reel Strip ---
+function buildReel() {
+    const reelTrack = document.getElementById('reel-track');
+    const reelWrapper = document.getElementById('reel-strip-wrapper');
+    if (!reelTrack || !reelWrapper) return;
+
+    const reelVideos = videos.filter(v => v.category.toLowerCase() === 'restaurante');
+    if (reelVideos.length === 0) return;
+
+    let isHovered = false;
+    let isVisible = true;
+
+    function syncPlayState() {
+        reelTrack.style.animationPlayState = (!isVisible || isHovered) ? 'paused' : 'running';
+    }
+
+    function createReelItem(video) {
+        const item = document.createElement('div');
+        item.classList.add('reel-item');
+
+        const thumbUrl = getThumbnail(video);
+        item.innerHTML = `
+            <img src="${thumbUrl}" alt="${video.title}" loading="lazy">
+            <div class="reel-play-btn">
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+        `;
+
+        const img = item.querySelector('img');
+        img.onerror = () => {
+            img.src = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="175" height="100" viewBox="0 0 175 100">
+                    <rect width="175" height="100" fill="#0d0d0d"/>
+                    <circle cx="87" cy="46" r="18" fill="#bb00ff" fill-opacity="0.25" stroke="#bb00ff" stroke-width="1.5"/>
+                    <polygon points="82,38 96,46 82,54" fill="#fff"/>
+                </svg>
+            `)}`;
+        };
+
+        item.addEventListener('click', () => openModal(video));
+        return item;
+    }
+
+    // 4× duplicação — animate -25% para loop perfeitamente contínuo
+    for (let i = 0; i < 4; i++) {
+        reelVideos.forEach(video => reelTrack.appendChild(createReelItem(video)));
+    }
+
+    // Velocidade: ~80px por segundo, dinamicamente calculada
+    const ITEM_WIDTH = 189; // 175px + 14px gap
+    const singleSetPx = reelVideos.length * ITEM_WIDTH;
+    const duration = Math.max(15, singleSetPx / 80);
+    reelTrack.style.animationDuration = `${duration.toFixed(1)}s`;
+
+    // Hover (desktop): pausa suave
+    reelWrapper.addEventListener('mouseenter', () => { isHovered = true; syncPlayState(); });
+    reelWrapper.addEventListener('mouseleave', () => { isHovered = false; syncPlayState(); });
+
+    // Touch (mobile): pausa ao segurar, retoma ao soltar
+    reelWrapper.addEventListener('touchstart', () => { isHovered = true; syncPlayState(); }, { passive: true });
+    reelWrapper.addEventListener('touchend', () => {
+        // pequeno delay para o click do openModal ser registrado antes de retomar
+        setTimeout(() => { isHovered = false; syncPlayState(); }, 350);
+    }, { passive: true });
+
+    // IntersectionObserver: pausa quando fora de vista (economiza CPU/GPU)
+    const io = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+        syncPlayState();
+    }, { threshold: 0 });
+    io.observe(reelWrapper);
+}
+
+buildReel();
+
+// --- Filters Scroll Hint (mobile) ---
+function initFiltersHint() {
+    if (window.innerWidth > 768) return;
+
+    const filtersEl = document.querySelector('.filters');
+    const hintWrapper = document.getElementById('filters-scroll-hint');
+    if (!filtersEl || !hintWrapper) return;
+
+    // Ativa o gradiente (só mobile)
+    hintWrapper.classList.add('show-hint');
+
+    // Some quando chega no fim
+    filtersEl.addEventListener('scroll', () => {
+        const atEnd = filtersEl.scrollLeft + filtersEl.clientWidth >= filtersEl.scrollWidth - 8;
+        hintWrapper.classList.toggle('at-end', atEnd);
+    }, { passive: true });
+
+    // Remove hint para sempre na primeira interação do usuário
+    filtersEl.addEventListener('touchstart', () => {
+        hintWrapper.classList.remove('hint-animate');
+    }, { once: true, passive: true });
+
+    // IntersectionObserver: faz o "peek" quando a seção fica visível pela primeira vez
+    let peeked = false;
+    const io = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !peeked) {
+            peeked = true;
+            io.disconnect();
+
+            // Delay para a animação de entrada da seção terminar
+            setTimeout(() => {
+                // Pulsa o gradiente para chamar atenção
+                hintWrapper.classList.add('hint-animate');
+
+                // Scroll suave para direita (peek) e volta
+                filtersEl.scrollTo({ left: 100, behavior: 'smooth' });
+                setTimeout(() => {
+                    // Só volta se o usuário não arrastou ainda
+                    if (filtersEl.scrollLeft <= 110) {
+                        filtersEl.scrollTo({ left: 0, behavior: 'smooth' });
+                    }
+                }, 750);
+            }, 600);
+        }
+    }, { threshold: 0.6 });
+
+    io.observe(hintWrapper);
+}
+
+initFiltersHint();
