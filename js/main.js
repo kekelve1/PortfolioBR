@@ -290,7 +290,6 @@ function openModal(video) {
         modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
     }
 
-    // Usa sempre o iframe embed do Google Drive
     const embedUrl = fileId
         ? `https://drive.google.com/file/d/${fileId}/preview`
         : getEmbedUrl(video.driveLink);
@@ -298,14 +297,34 @@ function openModal(video) {
     modalIframe.src = embedUrl;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    // Tenta entrar em fullscreen nativo automaticamente — apenas no mobile
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isMobile) {
+        const tryFullscreen = () => {
+            const el = modalIframe;
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(() => {});
+            } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen();
+            } else if (el.mozRequestFullScreen) {
+                el.mozRequestFullScreen();
+            }
+        };
+        setTimeout(tryFullscreen, 150);
+    }
 }
 
 function closeModal() {
     modal.classList.remove('active');
     modalIframe.src = '';
     document.body.style.overflow = '';
-}
 
+    // Sai do fullscreen nativo se ainda estiver ativo
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+    }
+}
 
 // --- Event Listeners ---
 filterBtns.forEach(btn => btn.addEventListener('click', handleFilter));
@@ -320,6 +339,20 @@ document.addEventListener('keydown', (e) => {
         closeModal();
     }
 });
+
+// Quando o usuário sai do fullscreen nativo (botão voltar, gesto, ESC),
+// fecha o modal automaticamente
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && modal.classList.contains('active')) {
+        closeModal();
+    }
+});
+document.addEventListener('webkitfullscreenchange', () => {
+    if (!document.webkitFullscreenElement && modal.classList.contains('active')) {
+        closeModal();
+    }
+});
+
 
 
 // --- Google Drive Fetch Utility with Smart Cache ---
