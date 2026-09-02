@@ -17,6 +17,7 @@ const paginationContainer = document.getElementById('pagination-container');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const modal = document.getElementById('video-modal');
 const closeModalBtn = document.querySelector('.close-modal');
+const modalVideo = document.getElementById('modal-video');
 const modalIframe = document.getElementById('modal-iframe');
 const modalTitle = document.getElementById('modal-title');
 const modalWaBtn = document.getElementById('modal-wa-btn');
@@ -282,8 +283,7 @@ function handleFilter(e) {
 }
 
 function openModal(video) {
-    const embedUrl = getEmbedUrl(video.driveLink);
-
+    const fileId = getFileId(video.driveLink);
     modalTitle.textContent = video.title;
 
     // Dynamically update WhatsApp button with the specific video name
@@ -292,14 +292,53 @@ function openModal(video) {
         modalWaBtn.href = `https://wa.me/557582943899?text=${encodeURIComponent(customMessage)}`;
     }
 
-    modalIframe.src = embedUrl;
+    if (fileId) {
+        const streamUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
+        const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+
+        // Tenta reprodução nativa HTML5 (limpa, sem tela preta do Google Drive)
+        if (modalVideo) {
+            modalVideo.style.display = 'block';
+            modalIframe.style.display = 'none';
+            modalVideo.src = streamUrl;
+
+            modalVideo.onerror = () => {
+                // Fallback automático para o iframe caso o stream direto seja bloqueado
+                modalVideo.style.display = 'none';
+                modalVideo.src = '';
+                modalIframe.style.display = 'block';
+                modalIframe.src = embedUrl;
+            };
+
+            modalVideo.play().catch(() => {});
+        } else {
+            modalIframe.style.display = 'block';
+            modalIframe.src = embedUrl;
+        }
+    } else {
+        if (modalVideo) {
+            modalVideo.style.display = 'none';
+            modalVideo.src = '';
+        }
+        modalIframe.style.display = 'block';
+        modalIframe.src = getEmbedUrl(video.driveLink);
+    }
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     modal.classList.remove('active');
-    modalIframe.src = '';
+    if (modalVideo) {
+        modalVideo.pause();
+        modalVideo.src = '';
+        modalVideo.style.display = 'none';
+    }
+    if (modalIframe) {
+        modalIframe.src = '';
+        modalIframe.style.display = 'none';
+    }
     document.body.style.overflow = '';
 }
 

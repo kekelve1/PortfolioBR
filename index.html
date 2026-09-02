@@ -179,9 +179,10 @@
     <!-- Video Modal -->
     <div id="video-modal" class="modal">
         <div class="modal-content">
-            <button class="close-modal">&times;</button>
-            <div class="video-wrapper">
-                <iframe id="modal-iframe" src="" frameborder="0" allow="autoplay; encrypted-media"
+            <button class="close-modal" aria-label="Fechar">&times;</button>
+            <div class="video-wrapper" id="video-wrapper">
+                <video id="modal-video" class="modal-video-player" controls playsinline preload="metadata"></video>
+                <iframe id="modal-iframe" class="modal-iframe-player" src="" frameborder="0" allow="autoplay; encrypted-media; fullscreen"
                     allowfullscreen></iframe>
             </div>
             <div class="modal-info">
