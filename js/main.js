@@ -6,8 +6,7 @@ let currentFilter = 'all';
 let currentPage = 1;
 let activeVideos = [...videos];
 
-// --- Google Drive API Configuration ---
-const GOOGLE_API_KEY = 'AIzaSyD8q_zmyrdyLnsrkhAgtbEL_wfSVozisL8';
+// --- Google Drive Folder Configuration ---
 const PREVIEW_FOLDER_ID = '1fejhjwZu1yeN7ehQfMx5qauLVsAKL1UH';
 const RESTAURANTE_FOLDER_ID = '1TSMC5rpArmHGiqdClhMi68Lrfp6Q9KxJ';
 
@@ -343,7 +342,7 @@ document.addEventListener('webkitfullscreenchange', () => {
 
 // --- Google Drive Fetch Utility with Smart Cache ---
 async function fetchFolderVideos(folderId) {
-    if (!GOOGLE_API_KEY || !folderId) return [];
+    if (!folderId) return [];
 
     const CACHE_KEY = `drive_folder_${folderId}`;
     const CACHE_TIME_KEY = `drive_folder_${folderId}_time`;
@@ -360,11 +359,10 @@ async function fetchFolderVideos(folderId) {
     }
 
     try {
-        const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,videoMediaMetadata)&key=${GOOGLE_API_KEY}`;
-        const res = await fetch(url);
+        const res = await fetch(`/api/drive?folderId=${encodeURIComponent(folderId)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const validFiles = (data.files || []).filter(f => f.mimeType && (f.mimeType.startsWith('video/') || f.name.match(/\.(mp4|mov|webm)$/i)));
+        const validFiles = data.files || [];
         
         try {
             sessionStorage.setItem(CACHE_KEY, JSON.stringify(validFiles));
